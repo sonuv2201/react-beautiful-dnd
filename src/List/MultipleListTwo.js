@@ -23,9 +23,6 @@ const MultipleListTwo = () => {
 			title: "One Plus",
       category:"type-a"
 		},
-	];
-
-  const itemData2 = [
 		{
 			id: 'list-5',
 			title: "Realme",
@@ -53,71 +50,52 @@ const MultipleListTwo = () => {
 		}
 	];
 
-	const [data, setData] = useState(itemData);
-	const [dataSecond, setDataSecond] = useState(itemData2);
+  
 
+	const [data, setData] = useState(itemData);
+/* 	const [dataSecond, setDataSecond] = useState(itemData2);
+ */
 	const handleDragEnd = (result) => {
 		if (!result.destination) return;
 
     console.log(result)
 
-    if(result.destination.droppableId === result.source.droppableId){
-      if(result.destination.droppableId === 'list-a'){
+		if(result.destination.droppableId === result.source.droppableId){
 
-        let tempData = sameParent({listItem:data,result:result})
-		    setData(tempData);
+			const items = Array.from(data);
+			const [reorderedItem] = items.splice(result.source.index, 1);
+			items.splice(result.destination.index, 0, reorderedItem);
+			setData(items);
 
-      }
-      if(result.destination.droppableId === 'list-b'){
+		}else{
 
-        let tempData = sameParent({listItem:dataSecond,result:result})
-		    setDataSecond(tempData);
+			const items = Array.from(data);
+			const [reorderedItem] = items.splice(result.source.index, 1);
 
-      }
-    }else if(result.destination.droppableId === 'list-a'){
+			reorderedItem.category = result.destination.droppableId;
 
-      let listData = differentParent({source:dataSecond,destination:data,result:result});
-      console.log(listData);
-      setData(listData.destinationItem);
-      setDataSecond(listData.sourceItem);
+			if(result.source.index > result.destination.index){
+				items.splice(result.destination.index, 0, reorderedItem);
+			}else{
+				items.splice(result.destination.index-1, 0, reorderedItem);
+			}
+			
+			setData(items);
+		}
 
-    } else if(result.destination.droppableId === 'list-b'){
-
-      let listData = differentParent({source:data,destination:dataSecond,result:result});
-      console.log(listData);
-      setData(listData.sourceItem);
-      setDataSecond(listData.destinationItem);
-    }
-		
 	};
 
 
-  const sameParent = ({listItem,result}) =>{
-    
-    const items = Array.from(listItem);
-       
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-
-      return items;
-  }
-
-  const differentParent = ({source,destination,result}) =>{
-    let destinationItem = Array.from(destination);
-      let sourceItem = Array.from(source);
-
-      const [reorderedItem] = sourceItem.splice(result.source.index, 1);
-      destinationItem.splice(result.destination.index, 0, reorderedItem);
-
-      const data = {sourceItem, destinationItem}
-      return data;
-  }
+	let [category,setCategory] = useState(["type-a","type-b"])
 
 	return (
 		<div className="App-header">
 			<DragDropContext onDragEnd={handleDragEnd}>
-					<Droppable droppableId="list-a">
+					
+					{
+						category.map((categoryItem,categoryIndex)=>
+						<div key={`{category-index-${categoryIndex}}`}>
+							<Droppable droppableId={categoryItem} >
 						{(provided) => (
 							<ul className="listItem"
 								{...provided.droppableProps}
@@ -126,28 +104,34 @@ const MultipleListTwo = () => {
 							>
 								{data &&
 									data.map((item, index) => {
-										return (
-											<Draggable key={item.id} draggableId={item.id.toString()} index={index}>
-												{(provided) => (
-													<li
-														ref={provided.innerRef}
-														{...provided.draggableProps}
-														{...provided.dragHandleProps}
-														elevation={2}
-														sx={{ marginBottom: "10px" }}
-													>
-														{item.title}
-													</li>
-												)}
-											</Draggable>
-										);
+										if(item.category === categoryItem){
+											return (
+												<Draggable key={item.id} draggableId={item.id.toString()} index={index}>
+													{(provided) => (
+														<li
+															ref={provided.innerRef}
+															{...provided.draggableProps}
+															{...provided.dragHandleProps}
+															elevation={2}
+															sx={{ marginBottom: "10px" }}
+														>
+															{item.title}
+														</li>
+													)}
+												</Draggable>
+											);
+										}
+										
 									})}
 								{provided.placeholder}
 							</ul>
 						)}
 					</Droppable>
+						</div>
+						)
+					}
 
-          <Droppable droppableId="list-b">
+          {/* <Droppable droppableId="list-b">
 						{(provided) => (
 							<ul className="listItem"
 								{...provided.droppableProps}
@@ -175,7 +159,7 @@ const MultipleListTwo = () => {
 								{provided.placeholder}
 							</ul>
 						)}
-					</Droppable>
+					</Droppable> */}
 				</DragDropContext>
 		</div>
 	);
